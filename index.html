@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vamos Doar</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background-color: #f0f4f0; display: flex; justify-content: center; padding: 20px; }
+        .container { max-width: 400px; width: 100%; background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h1 { color: #2e7d32; font-size: 28px; margin-bottom: 4px; }
+        .sub { color: #555; margin-bottom: 20px; font-size: 14px; }
+        .card { background: #f9fbf9; border-radius: 12px; padding: 16px; margin-bottom: 12px; border-left: 4px solid #2e7d32; }
+        .card h3 { color: #1e3a1e; font-size: 18px; }
+        .card p { color: #333; margin: 4px 0; font-size: 14px; }
+        .btn { background: #2e7d32; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 6px; }
+        .btn:hover { background: #1b5e20; }
+        .btn.historico { background: #1565c0; }
+        .btn.historico:hover { background: #0d47a1; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 4px; font-size: 14px; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
+        .tab { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+        .tab button { flex: 1; padding: 10px; border: none; background: #e0e7e0; border-radius: 8px; cursor: pointer; font-weight: bold; min-width: 70px; }
+        .tab button.active { background: #2e7d32; color: #fff; }
+        .oculto { display: none; }
+        .item-historico { background: #f5f5f5; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid #1565c0; }
+        .item-historico strong { color: #1e3a1e; }
+        .vazio { color: #888; font-style: italic; }
+        footer { margin-top: 20px; font-size: 12px; color: #888; text-align: center; }
+    </style>
+</head>
+<body>
+<div class="container" id="app">
+    <h1>🍽️ Vamos Doar</h1>
+    <p class="sub">Conectando doadores a quem precisa</p>
+
+    <!-- Abas -->
+    <div class="tab">
+        <button class="active" onclick="mostrarAba('doacoes')">Doações</button>
+        <button onclick="mostrarAba('solicitar')">Solicitar</button>
+        <button onclick="mostrarAba('cadastro')">Cadastro</button>
+        <button onclick="mostrarAba('historico')">Histórico</button>
+    </div>
+
+    <!-- ABAS -->
+    <div id="abaDoacoes">
+        <div id="listaDoacoes"></div>
+    </div>
+
+    <div id="abaSolicitar" class="oculto">
+        <h3>Solicitar Alimento</h3>
+        <div class="form-group">
+            <label>Seu nome</label>
+            <input type="text" id="nomeSolicitante" placeholder="Digite seu nome">
+        </div>
+        <div class="form-group">
+            <label>Alimento desejado</label>
+            <input type="text" id="alimentoDesejado" placeholder="Ex: arroz, feijão...">
+        </div>
+        <button class="btn" onclick="solicitar()">Enviar solicitação</button>
+        <div id="msgSolicitacao" style="margin-top:12px;"></div>
+    </div>
+
+    <div id="abaCadastro" class="oculto">
+        <h3>Cadastrar Doação</h3>
+        <div class="form-group">
+            <label>Alimento</label>
+            <input type="text" id="novoAlimento" placeholder="Ex: arroz">
+        </div>
+        <div class="form-group">
+            <label>Quantidade</label>
+            <input type="text" id="novaQuantidade" placeholder="Ex: 5kg">
+        </div>
+        <div class="form-group">
+            <label>Doador</label>
+            <input type="text" id="novoDoador" placeholder="Seu nome">
+        </div>
+        <button class="btn" onclick="cadastrarDoacao()">Cadastrar doação</button>
+        <div id="msgCadastro" style="margin-top:12px;"></div>
+    </div>
+
+    <div id="abaHistorico" class="oculto">
+        <h3>📋 Histórico de Ações</h3>
+        <div id="listaHistorico">
+            <p class="vazio">Nenhuma ação registrada ainda.</p>
+        </div>
+    </div>
+
+    <footer>Projeto Vamos Doar - Taió/SC</footer>
+</div>
+
+<script>
+    // Dados iniciais
+    let doacoes = [
+        { id: 1, alimento: 'Arroz', quantidade: '5kg', doador: 'Supermercado Central' },
+        { id: 2, alimento: 'Feijão', quantidade: '3kg', doador: 'Padaria do João' },
+        { id: 3, alimento: 'Leite', quantidade: '2L', doador: 'Ana Paula' }
+    ];
+
+    let historico = [];
+
+    function registrarHistorico(acao, detalhe) {
+        const agora = new Date();
+        const dataHora = agora.toLocaleString('pt-BR');
+        historico.unshift({ dataHora, acao, detalhe });
+        renderHistorico();
+    }
+
+    function renderDoacoes() {
+        const lista = document.getElementById('listaDoacoes');
+        if (doacoes.length === 0) {
+            lista.innerHTML = '<p class="vazio">Nenhuma doação disponível no momento.</p>';
+            return;
+        }
+        lista.innerHTML = doacoes.map(d => `
+            <div class="card">
+                <h3>${d.alimento}</h3>
+                <p><strong>Quantidade:</strong> ${d.quantidade}</p>
+                <p><strong>Doador:</strong> ${d.doador}</p>
+                <button class="btn" onclick="solicitarItem(${d.id})">Solicitar</button>
+            </div>
+        `).join('');
+    }
+
+    function renderHistorico() {
+        const div = document.getElementById('listaHistorico');
+        if (historico.length === 0) {
+            div.innerHTML = '<p class="vazio">Nenhuma ação registrada ainda.</p>';
+            return;
+        }
+        div.innerHTML = historico.map(h => `
+            <div class="item-historico">
+                <strong>${h.dataHora}</strong> – ${h.acao}<br>
+                <span style="font-size:13px; color:#555;">${h.detalhe}</span>
+            </div>
+        `).join('');
+    }
+
+    function solicitarItem(id) {
+        const item = doacoes.find(d => d.id === id);
+        if (!item) return;
+        const msg = `✅ Solicitação enviada para ${item.alimento} (${item.quantidade})`;
+        alert(msg);
+        registrarHistorico('Solicitação de doação', `${item.alimento} - ${item.quantidade} (doador: ${item.doador})`);
+        // Remover da lista de doações após solicitação (simulação)
+        doacoes = doacoes.filter(d => d.id !== id);
+        renderDoacoes();
+    }
+
+    function cadastrarDoacao() {
+        const alimento = document.getElementById('novoAlimento').value.trim();
+        const quantidade = document.getElementById('novaQuantidade').value.trim();
+        const doador = document.getElementById('novoDoador').value.trim();
+        const msg = document.getElementById('msgCadastro');
+
+        if (!alimento || !quantidade || !doador) {
+            msg.innerHTML = '<span style="color:#c62828;">Preencha todos os campos.</span>';
+            return;
+        }
+
+        const novoId = doacoes.length > 0 ? Math.max(...doacoes.map(d => d.id)) + 1 : 1;
+        doacoes.push({ id: novoId, alimento, quantidade, doador });
+        renderDoacoes();
+        registrarHistorico('Cadastro de doação', `${alimento} - ${quantidade} (doador: ${doador})`);
+        msg.innerHTML = '<span style="color:#2e7d32;">✅ Doação cadastrada com sucesso!</span>';
+        document.getElementById('novoAlimento').value = '';
+        document.getElementById('novaQuantidade').value = '';
+        document.getElementById('novoDoador').value = '';
+    }
+
+    function solicitar() {
+        const nome = document.getElementById('nomeSolicitante').value.trim();
+        const alimento = document.getElementById('alimentoDesejado').value.trim();
+        const msg = document.getElementById('msgSolicitacao');
+
+        if (!nome || !alimento) {
+            msg.innerHTML = '<span style="color:#c62828;">Preencha seu nome e o alimento desejado.</span>';
+            return;
+        }
+
+        msg.innerHTML = `<span style="color:#2e7d32;">✅ Solicitação enviada! Aguarde contato de um doador. (${alimento})</span>`;
+        registrarHistorico('Solicitação de alimento', `Alimento: ${alimento} - Solicitante: ${nome}`);
+        document.getElementById('nomeSolicitante').value = '';
+        document.getElementById('alimentoDesejado').value = '';
+    }
+
+    function mostrarAba(aba) {
+        document.getElementById('abaDoacoes').classList.add('oculto');
+        document.getElementById('abaSolicitar').classList.add('oculto');
+        document.getElementById('abaCadastro').classList.add('oculto');
+        document.getElementById('abaHistorico').classList.add('oculto');
+
+        if (aba === 'doacoes') document.getElementById('abaDoacoes').classList.remove('oculto');
+        else if (aba === 'solicitar') document.getElementById('abaSolicitar').classList.remove('oculto');
+        else if (aba === 'cadastro') document.getElementById('abaCadastro').classList.remove('oculto');
+        else if (aba === 'historico') document.getElementById('abaHistorico').classList.remove('oculto');
+
+        // Atualizar botões
+        document.querySelectorAll('.tab button').forEach(btn => btn.classList.remove('active'));
+        // O evento não tem target, então vamos pegar pelo texto
+        const botoes = document.querySelectorAll('.tab button');
+        const nomes = ['Doações', 'Solicitar', 'Cadastro', 'Histórico'];
+        botoes.forEach((btn, idx) => {
+            if (nomes[idx].toLowerCase() === aba || nomes[idx] === 'Doações' && aba === 'doacoes') {
+                btn.classList.add('active');
+            }
+        });
+        // Corrigir active manualmente
+        document.querySelectorAll('.tab button').forEach(btn => btn.classList.remove('active'));
+        if (aba === 'doacoes') botoes[0].classList.add('active');
+        else if (aba === 'solicitar') botoes[1].classList.add('active');
+        else if (aba === 'cadastro') botoes[2].classList.add('active');
+        else if (aba === 'historico') botoes[3].classList.add('active');
+    }
+
+    // Inicializar
+    renderDoacoes();
+    renderHistorico();
+</script>
+</body>
+</html>
