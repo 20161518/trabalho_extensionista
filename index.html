@@ -5,32 +5,170 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vamos Doar</title>
     <style>
+        html { font-size: 100%; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-        body { background-color: #f0f4f0; display: flex; justify-content: center; padding: 20px; }
-        .container { max-width: 400px; width: 100%; background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        h1 { color: #2e7d32; font-size: 28px; margin-bottom: 4px; }
-        .sub { color: #555; margin-bottom: 20px; font-size: 14px; }
-        .card { background: #f9fbf9; border-radius: 12px; padding: 16px; margin-bottom: 12px; border-left: 4px solid #2e7d32; }
-        .card h3 { color: #1e3a1e; font-size: 18px; }
-        .card p { color: #333; margin: 4px 0; font-size: 14px; }
-        .btn { background: #2e7d32; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 6px; }
+        body {
+            background-color: #f0f4f0;
+            display: flex;
+            justify-content: center;
+            padding: 1.25rem;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 25rem;
+            width: 100%;
+            background: #fff;
+            border-radius: 1rem;
+            padding: 1.25rem;
+            box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.25rem;
+            gap: 0.5rem;
+        }
+        h1 { color: #2e7d32; font-size: 1.75rem; }
+        .font-controls { display: flex; gap: 0.25rem; flex-shrink: 0; }
+        .font-btn {
+            background: #e0e7e0;
+            border: 0.0625rem solid #bbb;
+            border-radius: 0.5rem;
+            min-width: 2.25rem;
+            min-height: 2.25rem;
+            padding: 0.25rem 0.5rem;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.875rem;
+            touch-action: manipulation;
+        }
+        .font-btn:hover { background: #c8d8c8; }
+        .font-btn:active { background: #b0c8b0; }
+        .sub { color: #555; margin-bottom: 1.25rem; font-size: 0.875rem; }
+        .card {
+            background: #f9fbf9;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-left: 0.25rem solid #2e7d32;
+        }
+        .card h3 { color: #1e3a1e; font-size: 1.125rem; }
+        .card p { color: #333; margin: 0.25rem 0; font-size: 0.875rem; }
+        .btn {
+            background: #2e7d32;
+            color: #fff;
+            border: none;
+            padding: 0.625rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 0.5rem;
+            font-size: 0.9375rem;
+            min-height: 2.5rem;
+            touch-action: manipulation;
+        }
         .btn:hover { background: #1b5e20; }
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-weight: bold; margin-bottom: 4px; font-size: 14px; }
-        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
-        .tab { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-        .tab button { flex: 1; padding: 10px; border: none; background: #e0e7e0; border-radius: 8px; cursor: pointer; font-weight: bold; min-width: 70px; }
+        .btn:active { background: #145218; }
+        .form-group { margin-bottom: 0.75rem; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 0.25rem; font-size: 0.875rem; }
+        .form-group input {
+            width: 100%;
+            padding: 0.625rem;
+            border: 0.0625rem solid #ccc;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            min-height: 2.75rem;
+        }
+        .tab { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .tab button {
+            flex: 1;
+            padding: 0.625rem 0.5rem;
+            border: none;
+            background: #e0e7e0;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: bold;
+            min-width: 4.5rem;
+            font-size: 0.875rem;
+            min-height: 2.5rem;
+            touch-action: manipulation;
+        }
         .tab button.active { background: #2e7d32; color: #fff; }
         .oculto { display: none; }
-        .item-historico { background: #f5f5f5; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid #1565c0; }
+        .item-historico {
+            background: #f5f5f5;
+            padding: 0.625rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-left: 0.25rem solid #1565c0;
+            font-size: 0.9375rem;
+        }
         .item-historico strong { color: #1e3a1e; }
         .vazio { color: #888; font-style: italic; }
-        footer { margin-top: 20px; font-size: 12px; color: #888; text-align: center; }
+        footer { margin-top: 1.25rem; font-size: 0.75rem; color: #888; text-align: center; }
+
+        /* ESTATÍSTICAS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        .stat-box {
+            background: #e8f5e9;
+            border-radius: 0.5rem;
+            padding: 0.75rem 0.25rem;
+            text-align: center;
+            border: 0.0625rem solid #a5d6a7;
+        }
+        .stat-number {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+        .stat-label {
+            display: block;
+            font-size: 0.6875rem;
+            color: #555;
+            margin-top: 0.25rem;
+        }
+
+        /* SOBRE */
+        .sobre-info { font-size: 0.9375rem; line-height: 1.5; color: #333; }
+        .sobre-info p { margin-bottom: 0.5rem; }
+        .sobre-info strong { color: #2e7d32; }
+        .badges { display: flex; flex-wrap: wrap; gap: 0.375rem; margin-top: 0.5rem; }
+        .badge {
+            background: #c8e6c9;
+            color: #1b5e20;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.75rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        @media (max-width: 30rem) {
+            body { padding: 0.625rem; }
+            .container { padding: 1rem; border-radius: 0.75rem; }
+            h1 { font-size: 1.5rem; }
+            .tab button { font-size: 0.8125rem; min-width: 3.5rem; padding: 0.5rem 0.25rem; }
+            .stat-number { font-size: 1.25rem; }
+        }
     </style>
 </head>
 <body>
 <div class="container" id="app">
-    <h1>🍽️ Vamos Doar</h1>
+    <div class="header">
+        <h1>🍽️ Vamos Doar</h1>
+        <div class="font-controls">
+            <button class="font-btn" onclick="mudarFonte(-1)" title="Diminuir fonte" aria-label="Diminuir fonte">A-</button>
+            <button class="font-btn" onclick="mudarFonte(0)" title="Fonte normal" aria-label="Fonte normal">A</button>
+            <button class="font-btn" onclick="mudarFonte(1)" title="Aumentar fonte" aria-label="Aumentar fonte">A+</button>
+        </div>
+    </div>
     <p class="sub">Conectando doadores a quem precisa</p>
 
     <!-- Abas -->
@@ -39,6 +177,7 @@
         <button onclick="mostrarAba('solicitar')">Solicitar</button>
         <button onclick="mostrarAba('cadastro')">Cadastro</button>
         <button onclick="mostrarAba('historico')">Histórico</button>
+        <button onclick="mostrarAba('sobre')">Sobre</button>
     </div>
 
     <!-- ABA DOAÇÕES -->
@@ -58,7 +197,7 @@
             <input type="text" id="alimentoDesejado" placeholder="Ex: arroz, feijão...">
         </div>
         <button class="btn" onclick="solicitar()">Enviar solicitação</button>
-        <div id="msgSolicitacao" style="margin-top:12px;"></div>
+        <div id="msgSolicitacao" style="margin-top:0.75rem;"></div>
     </div>
 
     <!-- ABA CADASTRO -->
@@ -77,7 +216,7 @@
             <input type="text" id="novoDoador" placeholder="Seu nome">
         </div>
         <button class="btn" onclick="cadastrarDoacao()">Cadastrar doação</button>
-        <div id="msgCadastro" style="margin-top:12px;"></div>
+        <div id="msgCadastro" style="margin-top:0.75rem;"></div>
     </div>
 
     <!-- ABA HISTÓRICO -->
@@ -85,6 +224,45 @@
         <h3>📋 Histórico de Ações</h3>
         <div id="listaHistorico">
             <p class="vazio">Nenhuma ação registrada ainda.</p>
+        </div>
+    </div>
+
+    <!-- ABA SOBRE -->
+    <div id="abaSobre" class="oculto">
+        <h3>ℹ️ Sobre o Projeto</h3>
+        <div class="card" style="margin-top:0.75rem;">
+            <div class="sobre-info">
+                <p><strong>Vamos Doar</strong> é um aplicativo criado para conectar doadores e pessoas em situação de vulnerabilidade alimentar no município de <strong>Taió - SC</strong>.</p>
+                <p>Projeto desenvolvido como Atividade Extensionista III do curso de <strong>Engenharia de Software</strong> – UNINTER.</p>
+                <p><strong>Desenvolvedor:</strong> Júlio César Mathes (RU 4714719)</p>
+            </div>
+            <div class="badges">
+                <span class="badge">ODS 1</span>
+                <span class="badge">ODS 2</span>
+                <span class="badge">Full-Stack</span>
+                <span class="badge">Node.js</span>
+                <span class="badge">SQLite</span>
+                <span class="badge">Jest</span>
+            </div>
+        </div>
+
+        <h3 style="margin-top:1rem;">📊 Estatísticas do Sistema</h3>
+        <div class="card" style="margin-top:0.5rem;">
+            <p style="font-size:0.8125rem; color:#666;">Atualizadas em tempo real a partir da API:</p>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <span class="stat-number" id="statDoacoes">–</span>
+                    <span class="stat-label">Doações</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-number" id="statSolicitadas">–</span>
+                    <span class="stat-label">Solicitadas</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-number" id="statAcoes">–</span>
+                    <span class="stat-label">Ações</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -96,6 +274,29 @@
 // CONFIGURAÇÃO DA API
 // ============================================
 const API_URL = 'https://vamos-doar-api.onrender.com/api';
+
+// ============================================
+// CONTROLE DE TAMANHO DE FONTE (GLOBAL)
+// ============================================
+let fontScale = 100;
+
+function mudarFonte(direcao) {
+    if (direcao === 1) fontScale = Math.min(fontScale + 10, 150);
+    else if (direcao === -1) fontScale = Math.max(fontScale - 10, 80);
+    else fontScale = 100;
+    document.documentElement.style.fontSize = fontScale + '%';
+    try { localStorage.setItem('fontScale', fontScale); } catch(e) {}
+}
+
+(function() {
+    try {
+        const saved = localStorage.getItem('fontScale');
+        if (saved) {
+            fontScale = parseInt(saved);
+            document.documentElement.style.fontSize = fontScale + '%';
+        }
+    } catch(e) {}
+})();
 
 // ============================================
 // FUNÇÕES DA API
@@ -117,6 +318,16 @@ async function carregarHistorico() {
     } catch (error) {
         console.error('Erro ao carregar histórico:', error);
         return [];
+    }
+}
+
+async function carregarEstatisticas() {
+    try {
+        const response = await fetch(`${API_URL}/estatisticas`);
+        return await response.json();
+    } catch (error) {
+        console.error('Erro ao carregar estatísticas:', error);
+        return null;
     }
 }
 
@@ -167,9 +378,22 @@ async function renderHistorico() {
     div.innerHTML = historico.map(h => `
         <div class="item-historico">
             <strong>${new Date(h.criado_em).toLocaleString('pt-BR')}</strong> – ${h.acao}<br>
-            <span style="font-size:13px; color:#555;">${h.detalhe}</span>
+            <span style="font-size:0.8125rem; color:#555;">${h.detalhe}</span>
         </div>
     `).join('');
+}
+
+async function renderEstatisticas() {
+    const stats = await carregarEstatisticas();
+    if (!stats) {
+        document.getElementById('statDoacoes').textContent = '–';
+        document.getElementById('statSolicitadas').textContent = '–';
+        document.getElementById('statAcoes').textContent = '–';
+        return;
+    }
+    document.getElementById('statDoacoes').textContent = stats.total_doacoes || 0;
+    document.getElementById('statSolicitadas').textContent = stats.total_solicitadas || 0;
+    document.getElementById('statAcoes').textContent = stats.total_acoes || 0;
 }
 
 // ============================================
@@ -222,6 +446,8 @@ function mostrarAba(aba) {
     document.getElementById('abaSolicitar').classList.add('oculto');
     document.getElementById('abaCadastro').classList.add('oculto');
     document.getElementById('abaHistorico').classList.add('oculto');
+    document.getElementById('abaSobre').classList.add('oculto');
+
     if (aba === 'doacoes') document.getElementById('abaDoacoes').classList.remove('oculto');
     else if (aba === 'solicitar') document.getElementById('abaSolicitar').classList.remove('oculto');
     else if (aba === 'cadastro') document.getElementById('abaCadastro').classList.remove('oculto');
@@ -229,12 +455,18 @@ function mostrarAba(aba) {
         document.getElementById('abaHistorico').classList.remove('oculto');
         renderHistorico();
     }
+    else if (aba === 'sobre') {
+        document.getElementById('abaSobre').classList.remove('oculto');
+        renderEstatisticas();
+    }
+
     document.querySelectorAll('.tab button').forEach(btn => btn.classList.remove('active'));
     const botoes = document.querySelectorAll('.tab button');
     if (aba === 'doacoes') botoes[0].classList.add('active');
     else if (aba === 'solicitar') botoes[1].classList.add('active');
     else if (aba === 'cadastro') botoes[2].classList.add('active');
     else if (aba === 'historico') botoes[3].classList.add('active');
+    else if (aba === 'sobre') botoes[4].classList.add('active');
 }
 
 // ============================================
