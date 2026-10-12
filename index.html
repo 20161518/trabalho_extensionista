@@ -15,8 +15,6 @@
         .card p { color: #333; margin: 4px 0; font-size: 14px; }
         .btn { background: #2e7d32; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 6px; }
         .btn:hover { background: #1b5e20; }
-        .btn.historico { background: #1565c0; }
-        .btn.historico:hover { background: #0d47a1; }
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; font-weight: bold; margin-bottom: 4px; font-size: 14px; }
         .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
@@ -43,11 +41,12 @@
         <button onclick="mostrarAba('historico')">Histórico</button>
     </div>
 
-    <!-- ABAS -->
+    <!-- ABA DOAÇÕES -->
     <div id="abaDoacoes">
         <div id="listaDoacoes"></div>
     </div>
 
+    <!-- ABA SOLICITAR -->
     <div id="abaSolicitar" class="oculto">
         <h3>Solicitar Alimento</h3>
         <div class="form-group">
@@ -62,6 +61,7 @@
         <div id="msgSolicitacao" style="margin-top:12px;"></div>
     </div>
 
+    <!-- ABA CADASTRO -->
     <div id="abaCadastro" class="oculto">
         <h3>Cadastrar Doação</h3>
         <div class="form-group">
@@ -80,6 +80,7 @@
         <div id="msgCadastro" style="margin-top:12px;"></div>
     </div>
 
+    <!-- ABA HISTÓRICO -->
     <div id="abaHistorico" class="oculto">
         <h3>📋 Histórico de Ações</h3>
         <div id="listaHistorico">
@@ -91,132 +92,155 @@
 </div>
 
 <script>
-    // Dados iniciais
-    let doacoes = [
-        { id: 1, alimento: 'Arroz', quantidade: '5kg', doador: 'Supermercado Central' },
-        { id: 2, alimento: 'Feijão', quantidade: '3kg', doador: 'Padaria do João' },
-        { id: 3, alimento: 'Leite', quantidade: '2L', doador: 'Ana Paula' }
-    ];
+// ============================================
+// CONFIGURAÇÃO DA API
+// ============================================
+const API_URL = 'https://vamos-doar-api.onrender.com/api';
 
-    let historico = [];
-
-    function registrarHistorico(acao, detalhe) {
-        const agora = new Date();
-        const dataHora = agora.toLocaleString('pt-BR');
-        historico.unshift({ dataHora, acao, detalhe });
-        renderHistorico();
+// ============================================
+// FUNÇÕES DA API
+// ============================================
+async function carregarDoacoes() {
+    try {
+        const response = await fetch(`${API_URL}/doacoes`);
+        return await response.json();
+    } catch (error) {
+        console.error('Erro ao carregar doações:', error);
+        return [];
     }
+}
 
-    function renderDoacoes() {
-        const lista = document.getElementById('listaDoacoes');
-        if (doacoes.length === 0) {
-            lista.innerHTML = '<p class="vazio">Nenhuma doação disponível no momento.</p>';
-            return;
-        }
-        lista.innerHTML = doacoes.map(d => `
-            <div class="card">
-                <h3>${d.alimento}</h3>
-                <p><strong>Quantidade:</strong> ${d.quantidade}</p>
-                <p><strong>Doador:</strong> ${d.doador}</p>
-                <button class="btn" onclick="solicitarItem(${d.id})">Solicitar</button>
-            </div>
-        `).join('');
+async function carregarHistorico() {
+    try {
+        const response = await fetch(`${API_URL}/historico`);
+        return await response.json();
+    } catch (error) {
+        console.error('Erro ao carregar histórico:', error);
+        return [];
     }
+}
 
-    function renderHistorico() {
-        const div = document.getElementById('listaHistorico');
-        if (historico.length === 0) {
-            div.innerHTML = '<p class="vazio">Nenhuma ação registrada ainda.</p>';
-            return;
-        }
-        div.innerHTML = historico.map(h => `
-            <div class="item-historico">
-                <strong>${h.dataHora}</strong> – ${h.acao}<br>
-                <span style="font-size:13px; color:#555;">${h.detalhe}</span>
-            </div>
-        `).join('');
+async function cadastrarDoacaoAPI(alimento, quantidade, doador) {
+    const response = await fetch(`${API_URL}/doacoes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ alimento, quantidade, doador })
+    });
+    return response.json();
+}
+
+async function solicitarDoacaoAPI(id) {
+    const response = await fetch(`${API_URL}/doacoes/${id}/solicitar`, {
+        method: 'PUT'
+    });
+    return response.json();
+}
+
+// ============================================
+// RENDERIZAÇÃO
+// ============================================
+async function renderDoacoes() {
+    const lista = document.getElementById('listaDoacoes');
+    lista.innerHTML = '<p>Carregando...</p>';
+    const doacoes = await carregarDoacoes();
+    if (doacoes.length === 0) {
+        lista.innerHTML = '<p class="vazio">Nenhuma doação disponível no momento.</p>';
+        return;
     }
+    lista.innerHTML = doacoes.map(d => `
+        <div class="card">
+            <h3>${d.alimento}</h3>
+            <p><strong>Quantidade:</strong> ${d.quantidade}</p>
+            <p><strong>Doador:</strong> ${d.doador}</p>
+            <button class="btn" onclick="solicitarItem(${d.id})">Solicitar</button>
+        </div>
+    `).join('');
+}
 
-    function solicitarItem(id) {
-        const item = doacoes.find(d => d.id === id);
-        if (!item) return;
-        const msg = `✅ Solicitação enviada para ${item.alimento} (${item.quantidade})`;
-        alert(msg);
-        registrarHistorico('Solicitação de doação', `${item.alimento} - ${item.quantidade} (doador: ${item.doador})`);
-        // Remover da lista de doações após solicitação (simulação)
-        doacoes = doacoes.filter(d => d.id !== id);
-        renderDoacoes();
+async function renderHistorico() {
+    const div = document.getElementById('listaHistorico');
+    const historico = await carregarHistorico();
+    if (historico.length === 0) {
+        div.innerHTML = '<p class="vazio">Nenhuma ação registrada ainda.</p>';
+        return;
     }
+    div.innerHTML = historico.map(h => `
+        <div class="item-historico">
+            <strong>${new Date(h.criado_em).toLocaleString('pt-BR')}</strong> – ${h.acao}<br>
+            <span style="font-size:13px; color:#555;">${h.detalhe}</span>
+        </div>
+    `).join('');
+}
 
-    function cadastrarDoacao() {
-        const alimento = document.getElementById('novoAlimento').value.trim();
-        const quantidade = document.getElementById('novaQuantidade').value.trim();
-        const doador = document.getElementById('novoDoador').value.trim();
-        const msg = document.getElementById('msgCadastro');
+// ============================================
+// AÇÕES DO USUÁRIO
+// ============================================
+async function solicitarItem(id) {
+    const resultado = await solicitarDoacaoAPI(id);
+    alert('✅ ' + resultado.message);
+    renderDoacoes();
+    renderHistorico();
+}
 
-        if (!alimento || !quantidade || !doador) {
-            msg.innerHTML = '<span style="color:#c62828;">Preencha todos os campos.</span>';
-            return;
-        }
-
-        const novoId = doacoes.length > 0 ? Math.max(...doacoes.map(d => d.id)) + 1 : 1;
-        doacoes.push({ id: novoId, alimento, quantidade, doador });
-        renderDoacoes();
-        registrarHistorico('Cadastro de doação', `${alimento} - ${quantidade} (doador: ${doador})`);
+async function cadastrarDoacao() {
+    const alimento = document.getElementById('novoAlimento').value.trim();
+    const quantidade = document.getElementById('novaQuantidade').value.trim();
+    const doador = document.getElementById('novoDoador').value.trim();
+    const msg = document.getElementById('msgCadastro');
+    if (!alimento || !quantidade || !doador) {
+        msg.innerHTML = '<span style="color:#c62828;">Preencha todos os campos.</span>';
+        return;
+    }
+    try {
+        await cadastrarDoacaoAPI(alimento, quantidade, doador);
         msg.innerHTML = '<span style="color:#2e7d32;">✅ Doação cadastrada com sucesso!</span>';
         document.getElementById('novoAlimento').value = '';
         document.getElementById('novaQuantidade').value = '';
         document.getElementById('novoDoador').value = '';
+        renderDoacoes();
+        renderHistorico();
+    } catch (error) {
+        msg.innerHTML = '<span style="color:#c62828;">Erro ao cadastrar. Verifique se o servidor está rodando.</span>';
     }
+}
 
-    function solicitar() {
-        const nome = document.getElementById('nomeSolicitante').value.trim();
-        const alimento = document.getElementById('alimentoDesejado').value.trim();
-        const msg = document.getElementById('msgSolicitacao');
-
-        if (!nome || !alimento) {
-            msg.innerHTML = '<span style="color:#c62828;">Preencha seu nome e o alimento desejado.</span>';
-            return;
-        }
-
-        msg.innerHTML = `<span style="color:#2e7d32;">✅ Solicitação enviada! Aguarde contato de um doador. (${alimento})</span>`;
-        registrarHistorico('Solicitação de alimento', `Alimento: ${alimento} - Solicitante: ${nome}`);
-        document.getElementById('nomeSolicitante').value = '';
-        document.getElementById('alimentoDesejado').value = '';
+function solicitar() {
+    const nome = document.getElementById('nomeSolicitante').value.trim();
+    const alimento = document.getElementById('alimentoDesejado').value.trim();
+    const msg = document.getElementById('msgSolicitacao');
+    if (!nome || !alimento) {
+        msg.innerHTML = '<span style="color:#c62828;">Preencha todos os campos.</span>';
+        return;
     }
+    msg.innerHTML = `<span style="color:#2e7d32;">✅ Solicitação enviada! (${alimento})</span>`;
+    document.getElementById('nomeSolicitante').value = '';
+    document.getElementById('alimentoDesejado').value = '';
+}
 
-    function mostrarAba(aba) {
-        document.getElementById('abaDoacoes').classList.add('oculto');
-        document.getElementById('abaSolicitar').classList.add('oculto');
-        document.getElementById('abaCadastro').classList.add('oculto');
-        document.getElementById('abaHistorico').classList.add('oculto');
-
-        if (aba === 'doacoes') document.getElementById('abaDoacoes').classList.remove('oculto');
-        else if (aba === 'solicitar') document.getElementById('abaSolicitar').classList.remove('oculto');
-        else if (aba === 'cadastro') document.getElementById('abaCadastro').classList.remove('oculto');
-        else if (aba === 'historico') document.getElementById('abaHistorico').classList.remove('oculto');
-
-        // Atualizar botões
-        document.querySelectorAll('.tab button').forEach(btn => btn.classList.remove('active'));
-        // O evento não tem target, então vamos pegar pelo texto
-        const botoes = document.querySelectorAll('.tab button');
-        const nomes = ['Doações', 'Solicitar', 'Cadastro', 'Histórico'];
-        botoes.forEach((btn, idx) => {
-            if (nomes[idx].toLowerCase() === aba || nomes[idx] === 'Doações' && aba === 'doacoes') {
-                btn.classList.add('active');
-            }
-        });
-        // Corrigir active manualmente
-        document.querySelectorAll('.tab button').forEach(btn => btn.classList.remove('active'));
-        if (aba === 'doacoes') botoes[0].classList.add('active');
-        else if (aba === 'solicitar') botoes[1].classList.add('active');
-        else if (aba === 'cadastro') botoes[2].classList.add('active');
-        else if (aba === 'historico') botoes[3].classList.add('active');
+function mostrarAba(aba) {
+    document.getElementById('abaDoacoes').classList.add('oculto');
+    document.getElementById('abaSolicitar').classList.add('oculto');
+    document.getElementById('abaCadastro').classList.add('oculto');
+    document.getElementById('abaHistorico').classList.add('oculto');
+    if (aba === 'doacoes') document.getElementById('abaDoacoes').classList.remove('oculto');
+    else if (aba === 'solicitar') document.getElementById('abaSolicitar').classList.remove('oculto');
+    else if (aba === 'cadastro') document.getElementById('abaCadastro').classList.remove('oculto');
+    else if (aba === 'historico') {
+        document.getElementById('abaHistorico').classList.remove('oculto');
+        renderHistorico();
     }
+    document.querySelectorAll('.tab button').forEach(btn => btn.classList.remove('active'));
+    const botoes = document.querySelectorAll('.tab button');
+    if (aba === 'doacoes') botoes[0].classList.add('active');
+    else if (aba === 'solicitar') botoes[1].classList.add('active');
+    else if (aba === 'cadastro') botoes[2].classList.add('active');
+    else if (aba === 'historico') botoes[3].classList.add('active');
+}
 
-    // Inicializar
-    renderDoacoes();
-    renderHistorico();
+// ============================================
+// INICIALIZAR
+// ============================================
+renderDoacoes();
 </script>
 </body>
 </html>
